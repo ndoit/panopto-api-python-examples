@@ -10,19 +10,19 @@ import configparser
 from pysimplesoap.client import SoapClient
 
 
-# def generateauthcode(userkey, servername, sharedSecret):
-#     '''
-#         function used to create auth code for SOAP requests
-#         'userkey' is either user's Panopto admin's username, or the username decorated with the the external provider's instance name if it is an external admin user.
-#         'servername' is the domain name of the Panopto server to make the SOAP request to (e.g. demo.hosted.panopto.com)
-#         'sharedSecret' is the Application key from the provider on the Panopto Identity Provider's page.
-#     '''
-#     payload = userkey + '@' + servername
-#     signedPayload = payload + '|' + sharedSecret
-#     m = hashlib.sha1()
-#     m.update(signedPayload)
-#     authcode = m.hexdigest().upper()
-#     return authcode
+def generateauthcode(userkey, servername, sharedSecret):
+    '''
+        function used to create auth code for SOAP requests
+        'userkey' is either user's Panopto admin's username, or the username decorated with the the external provider's instance name if it is an external admin user.
+        'servername' is the domain name of the Panopto server to make the SOAP request to (e.g. demo.hosted.panopto.com)
+        'sharedSecret' is the Application key from the provider on the Panopto Identity Provider's page.
+    '''
+    payload = userkey + '@' + servername
+    signedPayload = payload + '|' + sharedSecret
+    m = hashlib.sha1()
+    m.update(signedPayload.encode('utf-8'))
+    authcode = m.hexdigest().upper()
+    return authcode
 
 
 # '''
@@ -66,13 +66,11 @@ applicationkey = secrets_config['Common']['application_key']
 # Name of the panopto server to add the user to.
 servername = secrets_config['Common']['server_address']
 
-breakpoint()
-
 
 '''
 Create a SOAP client object using the
 '''
-client = SoapClient(wsdl="https://" + servername + "/Panopto/PublicAPI/4.6/UsageReporting.svc?wsdl", trace=False)
+client = SoapClient(wsdl="https://" + servername + "/Panopto/PublicAPI/4.6/UserManagement.svc?wsdl", trace=False)
 
 '''
 Generate auth code for making SOAP call using admin user info.
@@ -84,6 +82,12 @@ authcode = generateauthcode(userkey, servername, applicationkey)
 '''
 AuthenticationInfo = {'AuthCode': authcode, 'Password': password, 'UserKey': userkey}
 
+
+getusageresponse = client.GetUserByKey(
+    auth=AuthenticationInfo,
+    userKey='rsnodgra'
+)
+# print(getusageresponse)
 # '''
 # Soap call to create user in panopto. Result will contain user's public ID if successful.
 # '''
