@@ -3,6 +3,9 @@
 # both the CreateUser and AddMembersToInternalGroup methods from the API.
 
 import hashlib
+from datetime import datetime
+from dateutil import tz
+# from datetime import timezone, datetime
 import configparser
 # import uuid
 # This demonstration uses the pysimplesoap (soap2py) library.
@@ -70,8 +73,7 @@ servername = secrets_config['Common']['server_address']
 '''
 Create a SOAP client object using the
 '''
-client = SoapClient(wsdl="https://" + servername + "/Panopto/PublicAPI/4.6/UserManagement.svc?wsdl", trace=False)
-
+client = SoapClient(wsdl="https://" + servername + "/Panopto/PublicAPI/4.6/UsageReporting.svc?wsdl", trace=False)
 '''
 Generate auth code for making SOAP call using admin user info.
 '''
@@ -82,12 +84,34 @@ authcode = generateauthcode(userkey, servername, applicationkey)
 '''
 AuthenticationInfo = {'AuthCode': authcode, 'Password': password, 'UserKey': userkey}
 
+sakai_courses_folder_id = '1cacbfae-dd5b-43ac-90a1-7d93ef3410a0'
 
-getusageresponse = client.GetUserByKey(
+# {'action': 'ExportFolderAnalytics',
+#            'folder': 'c6d51db2-b319-44ae-a190-2c5b06e926be',
+#            'startTime': '2020-06-01T00%3A00%3A00-04%3A00',
+#            'endTime': '2020-07-07T23%3A59%3A59-04%3A00',
+#            'type': 'ViewsAndDownloads',
+#            'timezone': 'America%2FIndianapolis'}
+
+begindate = datetime(2020, 6, 1).astimezone(tz.UTC)
+enddate = datetime(2020, 7, 1).astimezone(tz.UTC)
+
+getusageresponse = client.GetFolderSummaryUsage(
     auth=AuthenticationInfo,
-    userKey='rsnodgra'
+    folderId=sakai_courses_folder_id,
+    beginRange=begindate,
+    endRange=enddate,
+    granularity='Daily'
 )
 # print(getusageresponse)
+
+# getuser = client.GetUserByKey(
+#     auth=AuthenticationInfo,
+#     userKey='panopto_analytics'
+# )
+#
+# print(getuser)
+
 # '''
 # Soap call to create user in panopto. Result will contain user's public ID if successful.
 # '''
