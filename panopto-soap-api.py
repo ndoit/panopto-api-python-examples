@@ -8,9 +8,16 @@ from dateutil import tz
 # from datetime import timezone, datetime
 import configparser
 # import uuid
-# This demonstration uses the pysimplesoap (soap2py) library.
-# It may be downloaded from https://code.google.com/p/pysimplesoap/
-from pysimplesoap.client import SoapClient
+import logging
+# https://github.com/suds-community/suds
+from suds.client import Client
+
+
+'''
+    configure logging
+'''
+logging.basicConfig(level=logging.INFO)
+logging.getLogger('suds.client').setLevel(logging.DEBUG)
 
 
 def generateauthcode(userkey, servername, sharedSecret):
@@ -73,7 +80,8 @@ servername = secrets_config['Common']['server_address']
 '''
 Create a SOAP client object using the
 '''
-client = SoapClient(wsdl="https://" + servername + "/Panopto/PublicAPI/4.6/UsageReporting.svc?wsdl", trace=False)
+url = "https://" + servername + "/Panopto/PublicAPI/4.6/UsageReporting.svc?wsdl"
+client = Client(url)
 '''
 Generate auth code for making SOAP call using admin user info.
 '''
@@ -93,16 +101,30 @@ sakai_courses_folder_id = '1cacbfae-dd5b-43ac-90a1-7d93ef3410a0'
 #            'type': 'ViewsAndDownloads',
 #            'timezone': 'America%2FIndianapolis'}
 
+
 begindate = datetime(2020, 6, 1).astimezone(tz.UTC)
 enddate = datetime(2020, 7, 1).astimezone(tz.UTC)
 
-getusageresponse = client.GetFolderSummaryUsage(
+'''
+    get system usage summary
+'''
+result = client.service.GetSystemSummaryUsage(
     auth=AuthenticationInfo,
-    folderId=sakai_courses_folder_id,
     beginRange=begindate,
     endRange=enddate,
     granularity='Daily'
 )
+
+print(result)
+
+# getusageresponse = client.GetFolderSummaryUsage(
+#     auth=AuthenticationInfo,
+#     folderId=sakai_courses_folder_id,
+#     beginRange=begindate,
+#     endRange=enddate,
+#     granularity='Daily'
+# )
+# breakpoint()
 # print(getusageresponse)
 
 # getuser = client.GetUserByKey(

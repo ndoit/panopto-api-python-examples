@@ -1,2 +1,2 @@
 configparser==3.5.0
-PySimpleSOAP==1.16.2
+suds-community==0.8.4
